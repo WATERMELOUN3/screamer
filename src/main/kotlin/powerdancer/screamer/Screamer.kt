@@ -8,14 +8,11 @@ import powerdancer.screamer.pdBedroom.BedroomTheater
 import powerdancer.screamer.pdBedroom.Karaoke
 import powerdancer.screamer.pdBedroom.Test
 
-class Scream {
-}
-
 fun main(args:Array<String>) = runBlocking{
-    if (args.size == 0) {
+    if (args.isEmpty()) {
         Processor.process(
-            ScreamMulticastAudioReceiver(),
-            AudioPlayer(2048)
+            ScreamUnicastAudioReceiver(4011),
+            AudioPlayer(2048, "Komplete Audio 1")
         ).join()
     } else {
         when(args[0]) {

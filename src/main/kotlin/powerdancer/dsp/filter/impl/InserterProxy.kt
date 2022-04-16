@@ -9,13 +9,13 @@ import powerdancer.dsp.filter.Filter
 
 // lets you insert events at this filter manually by calling the insert func (safe to call during processing run)
 class InserterProxy: Filter {
-    val pending = Channel<Flow<Event>>(Int.MAX_VALUE)
+    private val pending = Channel<Flow<Event>>(Int.MAX_VALUE)
 
     override suspend fun filter(event: Event): Flow<Event> = flow {
-        var p = pending.poll()
+        var p = pending.tryReceive().getOrNull()
         while (p != null) {
             emitAll(p)
-            p = pending.poll()
+            p = pending.tryReceive().getOrNull()
         }
         emit(event)
     }

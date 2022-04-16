@@ -2,33 +2,31 @@ package powerdancer.screamer
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ticker
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import powerdancer.dsp.filter.AbstractTerminalFilter
 import java.lang.Exception
-import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicReference
 import javax.sound.sampled.AudioFormat
-import kotlin.coroutines.coroutineContext
 
-class TcpAudioSender(val host: String, val port: Int = 6789): AbstractTerminalFilter() {
+class TcpAudioSender(private val host: String, private val port: Int = 6789): AbstractTerminalFilter() {
     companion object {
-        val logger = LoggerFactory.getLogger(TcpAudioSender::class.java)
+        val logger: Logger = LoggerFactory.getLogger(TcpAudioSender::class.java)
     }
 
-    val output: AtomicReference<Socket?> = AtomicReference(null)
-    var currentFormat: AudioFormat? = null
-    var encodedSampleRate: Byte = 0
-    var bitSize: Byte = 0
+    private val output: AtomicReference<Socket?> = AtomicReference(null)
+    private var encodedSampleRate: Byte = 0
+    private var bitSize: Byte = 0
     var channels: Byte = 0
 
-    var connectionJob: Job? = null
+    private var connectionJob: Job? = null
 
+    @OptIn(ObsoleteCoroutinesApi::class)
     override suspend fun onInit() {
         connectionJob = CoroutineScope(Dispatchers.Default).launch {
             ticker(1000).receiveAsFlow().collect {
@@ -54,8 +52,8 @@ class TcpAudioSender(val host: String, val port: Int = 6789): AbstractTerminalFi
         encodedSampleRate = ScreamUtils.encodeSampleRate(format.sampleRate.toInt())
     }
 
-    override suspend fun onPcmData(b: ByteBuffer) {
-        val payloadSize = b.remaining() + 5
+    override suspend fun onPcmData(data: ByteBuffer) {
+        val payloadSize = data.remaining() + 5
         if (logger.isDebugEnabled) logger.debug("payloadSize {}", payloadSize)
         output.get()?.getOutputStream()?.let {
             runCatching {
@@ -74,24 +72,21 @@ class TcpAudioSender(val host: String, val port: Int = 6789): AbstractTerminalFi
 
                 if (logger.isDebugEnabled) logger.debug("sent header to {}", host)
 
-                it.write(b.array(), b.position(), b.remaining())
+                it.write(data.array(), data.position(), data.remaining())
                 if (logger.isDebugEnabled) logger.debug("sent payload to {}", host)
             }.getOrElse {
                 output.set(null)
                 logger.error(it.message, it)
             }
         }
-
     }
 
 
     override suspend fun onClose() {
         kotlin.runCatching {
-            connectionJob?.let { it.cancel() }
+            connectionJob?.cancel()
 
-            output.get()?.let {
-                it.close()
-            }
+            output.get()?.close()
         }
     }
 

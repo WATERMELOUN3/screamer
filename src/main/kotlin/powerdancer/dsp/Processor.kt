@@ -1,25 +1,22 @@
 package powerdancer.dsp
 
-import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.reactor.asFlux
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import powerdancer.dsp.event.Bump
-import powerdancer.dsp.event.Close
 import powerdancer.dsp.event.Event
 import powerdancer.dsp.event.Init
 import powerdancer.dsp.filter.Filter
-import javax.sound.sampled.AudioFormat
 
 object Processor {
-    val logger = LoggerFactory.getLogger(Processor::class.java)
+    val logger: Logger = LoggerFactory.getLogger(Processor::class.java)
     private val scope = CoroutineScope(Dispatchers.Default + CoroutineName("powerdancer.dsp.Processor"))
 
+    @OptIn(FlowPreview::class)
     fun process(vararg filters: Filter) = scope.launch {
         filters.asFlow().fold(
-            flow<Event> {
+            flow {
                 emit(Init)
                 while(true) {
                     emit(Bump)

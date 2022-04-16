@@ -1,9 +1,9 @@
 package powerdancer.dsp.filter.impl
 
-import io.ktor.application.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.routing.*
 import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -16,23 +16,21 @@ import powerdancer.dsp.event.Event
 import powerdancer.dsp.event.Init
 import powerdancer.dsp.filter.Filter
 import java.net.URI
-import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.nio.charset.StandardCharsets
 
-class ConfigurationFilter(val port: Int = 6788, vararg val repeatTo: String): Filter {
-    val pending = Channel<ConfigPush>(10)
-    val c = HttpClient.newHttpClient()
+class ConfigurationFilter(private val port: Int = 6788, vararg val repeatTo: String): Filter {
+    private val pending = Channel<ConfigPush>(10)
+    private val c = HttpClient.newHttpClient()
 
-    lateinit var server: NettyApplicationEngine
+    private lateinit var server: NettyApplicationEngine
 
     override suspend fun filter(event: Event): Flow<Event> = flow{
-        var e = pending.poll()
+        var e = pending.tryReceive().getOrNull()
         while (e != null) {
             emit(e)
-            e = pending.poll()
+            e = pending.tryReceive().getOrNull()
         }
         when (event) {
             Init -> {
@@ -46,7 +44,7 @@ class ConfigurationFilter(val port: Int = 6788, vararg val repeatTo: String): Fi
                                         launch {
                                             c.send(
                                                 HttpRequest.newBuilder()
-                                                    .uri(URI(it + "?$k=$v"))
+                                                    .uri(URI("$it?$k=$v"))
                                                     .POST(HttpRequest.BodyPublishers.noBody())
                                                     .build(),
                                                 HttpResponse.BodyHandlers.discarding()

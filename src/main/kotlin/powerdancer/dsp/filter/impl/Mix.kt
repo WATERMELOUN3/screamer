@@ -7,8 +7,6 @@ import powerdancer.dsp.event.Event
 import powerdancer.dsp.event.Float64PcmData
 import powerdancer.dsp.event.FormatChange
 import powerdancer.dsp.filter.AbstractFilter
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.DoubleBuffer
 import javax.sound.sampled.AudioFormat
 
@@ -17,7 +15,7 @@ import javax.sound.sampled.AudioFormat
 //    (multipliers[N][1] * incoming impulse for channel 1) +
 //    (multipliers[N][2] * incoming impulse for channel 2) +
 // and so on. Any missing unmappable channels result in zero in above application
-class Mix(vararg val multipliers: DoubleArray): AbstractFilter() {
+class Mix(private vararg val multipliers: DoubleArray): AbstractFilter() {
 
     override suspend fun onFloat64PcmData(data: Array<DoubleBuffer>): Flow<Event> {
         val output = Array<DoubleBuffer>(multipliers.size) { i->
@@ -47,14 +45,14 @@ class Mix(vararg val multipliers: DoubleArray): AbstractFilter() {
     }
 
 
-    override suspend fun onFormatChange(newFormat: AudioFormat) = flowOf(
+    override suspend fun onFormatChange(format: AudioFormat) = flowOf(
         FormatChange(AudioFormat(
             AudioFormat.Encoding.PCM_FLOAT,
-            newFormat.sampleRate,
+            format.sampleRate,
             64,
             multipliers.size,
             8 * multipliers.size,
-            newFormat.sampleRate,
+            format.sampleRate,
             false
         ))
     )

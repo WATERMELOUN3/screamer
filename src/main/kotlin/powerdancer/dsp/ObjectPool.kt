@@ -1,19 +1,20 @@
 package powerdancer.dsp
 
 import kotlinx.coroutines.channels.Channel
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicInteger
 
 class ObjectPool<T>(maxInstances: Int = Integer.MAX_VALUE, val createFunc: ()->T) {
     companion object {
-        val logger = LoggerFactory.getLogger(ObjectPool::class.java)
+        val logger: Logger = LoggerFactory.getLogger(ObjectPool::class.java)
     }
 
     private val limiter = AtomicInteger(maxInstances) // once countdown to zero, no more creating of instances
     private val pool = Channel<T>(maxInstances)
 
     suspend fun take(): T {
-        val t = pool.poll()
+        val t = pool.tryReceive().getOrNull()
         if (t != null) {
             if (logger.isDebugEnabled) logger.debug("took from pool")
             return t

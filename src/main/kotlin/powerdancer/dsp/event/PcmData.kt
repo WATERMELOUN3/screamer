@@ -13,10 +13,10 @@ data class PcmData (
 
         suspend fun takeBufferFromPool(minSize: Int): ByteBuffer {
             val b = bufferPool.take()
-            if (b.capacity() < minSize) {
-                return ByteBuffer.allocate(minSize * 2)
+            return if (b.capacity() < minSize) {
+                ByteBuffer.allocate(minSize * 2)
             } else {
-                return b
+                b
             }
         }
 

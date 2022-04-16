@@ -2,15 +2,15 @@ package powerdancer.dsp.filter.impl
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.flow.cancel
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import powerdancer.dsp.event.Bump
 import powerdancer.dsp.event.Event
 import powerdancer.dsp.filter.Filter
 
-class Forker(vararg val pipelines: Array<Filter>): Filter {
-    val logger = LoggerFactory.getLogger(Forker::class.java)
+class Forker(private vararg val pipelines: Array<Filter>): Filter {
+    val logger: Logger = LoggerFactory.getLogger(Forker::class.java)
 
+    @OptIn(FlowPreview::class)
     override suspend fun filter(event: Event): Flow<Event> {
         val supervisor = SupervisorJob()
         val scope = CoroutineScope(Dispatchers.Default + supervisor)

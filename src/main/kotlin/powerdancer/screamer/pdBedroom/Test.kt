@@ -1,10 +1,9 @@
 package powerdancer.screamer.pdBedroom
 
 import kotlinx.coroutines.*
-import javax.sound.sampled.AudioFormat
-import javax.sound.sampled.AudioSystem
 
 object Test {
+    @OptIn(DelicateCoroutinesApi::class)
     fun run(): Job {
         return GlobalScope.launch {
 
