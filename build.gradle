@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.6.20'
     id 'application'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 ext.ktor_version = '2.0.0'
@@ -40,4 +41,11 @@ compileTestKotlin {
 }
 application {
     mainClassName = "powerdancer.screamer.ScreamerKt"
+}
+
+jar {
+    duplicatesStrategy = 'include'
+    manifest {
+        attributes "Main-Class": "powerdancer.screamer.ScreamerKt"
+    }
 }

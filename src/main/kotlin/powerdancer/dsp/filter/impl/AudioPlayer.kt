@@ -35,7 +35,7 @@ class AudioPlayer(var samplesInBuffer: Int, mixerName: String? = null, private v
             open()
         }
         logger.info(format.toString())
-        logger.info("${mixer?.name}")
+        logger.info("Output: ${mixer?.name}")
     }
 
     override suspend fun onPcmData(data: ByteBuffer) {
@@ -72,7 +72,6 @@ class AudioPlayer(var samplesInBuffer: Int, mixerName: String? = null, private v
             output!!.open(format, format.channels * ((format.sampleSizeInBits + 7) / 8) * samplesInBuffer)
             output!!.start()
             playing = true
-            logger.info("Playing !")
         }
     }
 }

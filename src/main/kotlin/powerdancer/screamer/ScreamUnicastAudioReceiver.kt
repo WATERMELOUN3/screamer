@@ -1,16 +1,19 @@
 package powerdancer.screamer
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import powerdancer.dsp.Processor
 import powerdancer.dsp.event.Bump
 import powerdancer.dsp.event.Event
 import powerdancer.dsp.event.FormatChange
 import powerdancer.dsp.event.PcmData
 import powerdancer.dsp.filter.AbstractFilter
+import powerdancer.dsp.filter.impl.AudioPlayer
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.SocketTimeoutException
@@ -19,6 +22,13 @@ import java.nio.ByteOrder
 
 class ScreamUnicastAudioReceiver(port: Int) : AbstractFilter() {
     companion object {
+        fun run(port: Int = 4010, mixerName: String? = null): Job {
+            return Processor.process(
+                ScreamUnicastAudioReceiver(port),
+                AudioPlayer(2048, mixerName)
+            )
+        }
+
         val logger: Logger = LoggerFactory.getLogger(ScreamMulticastAudioReceiver::class.java)
     }
 

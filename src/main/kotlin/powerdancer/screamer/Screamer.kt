@@ -11,16 +11,24 @@ import powerdancer.screamer.pdBedroom.Test
 fun main(args:Array<String>) = runBlocking{
     if (args.isEmpty()) {
         Processor.process(
-            ScreamUnicastAudioReceiver(4011),
-            AudioPlayer(2048, "Komplete Audio 1")
+            ScreamMulticastAudioReceiver(),
+            AudioPlayer(2048)
         ).join()
     } else {
         when(args[0]) {
+            "unicast" -> {
+                when(args.size) {
+                    1 -> ScreamUnicastAudioReceiver.run().join()
+                    2 -> ScreamUnicastAudioReceiver.run(args[1].toInt())
+                    else -> ScreamUnicastAudioReceiver.run(args[1].toInt(), args[2])
+                }
+            }
             "receiver" -> ScreamerReceiver.run().join()
             "bedroomReceiver" -> BedroomReceiver.run().join()
             "test" -> Test.run().join()
             "bedroom" -> BedroomTheater.run().join()
             "karaoke" -> Karaoke.run().join()
+            else -> println("Invalid input.")
         }
     }
 
