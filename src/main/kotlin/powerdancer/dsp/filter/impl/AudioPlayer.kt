@@ -35,7 +35,7 @@ class AudioPlayer(var samplesInBuffer: Int, mixerName: String? = null, private v
             open()
         }
         logger.info(format.toString())
-        logger.info("Output: ${mixer?.name}")
+        logger.info("Output: ${mixer?.name ?: "default"}")
     }
 
     override suspend fun onPcmData(data: ByteBuffer) {

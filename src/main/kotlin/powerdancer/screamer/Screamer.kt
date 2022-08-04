@@ -8,7 +8,7 @@ import powerdancer.screamer.pdBedroom.BedroomTheater
 import powerdancer.screamer.pdBedroom.Karaoke
 import powerdancer.screamer.pdBedroom.Test
 
-fun main(args:Array<String>) = runBlocking{
+fun main(args:Array<String>): Unit = runBlocking{
     if (args.isEmpty()) {
         Processor.process(
             ScreamMulticastAudioReceiver(),
@@ -19,8 +19,8 @@ fun main(args:Array<String>) = runBlocking{
             "unicast" -> {
                 when(args.size) {
                     1 -> ScreamUnicastAudioReceiver.run().join()
-                    2 -> ScreamUnicastAudioReceiver.run(args[1].toInt())
-                    else -> ScreamUnicastAudioReceiver.run(args[1].toInt(), args[2])
+                    2 -> ScreamUnicastAudioReceiver.run(args[1].toInt()).join()
+                    else -> ScreamUnicastAudioReceiver.run(args[1].toInt(), args[2]).join()
                 }
             }
             "receiver" -> ScreamerReceiver.run().join()
